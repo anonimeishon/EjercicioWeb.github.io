@@ -61,29 +61,28 @@ signInForm.addEventListener('submit', async (e) => {
   const email = document.querySelector('#login-email').value;
   const password = document.querySelector('#login-password').value;
 
-  fstore
-    .collection('Fechas')
-    .where('User', '==', email)
-    .get()
-    .then(function (querySnapshot) {
-      querySnapshot.forEach(function (doc) {
-        const data = doc.data();
-        fstore
-          .collection('Fechas')
-          .doc(data.User)
-          .set({
-            User: data.User,
-            Location: coords,
-            Date: new Date(Date.now()),
-            Times: data.Times + 1
-          });
-      });
-    })
-    .catch(function (error) {
-      console.log('Error getting documents: ', error);
-    });
-
   auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
+    fstore
+      .collection('Fechas')
+      .where('User', '==', email)
+      .get()
+      .then(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+          const data = doc.data();
+          fstore
+            .collection('Fechas')
+            .doc(data.User)
+            .set({
+              User: data.User,
+              Location: coords,
+              Date: new Date(Date.now()),
+              Times: data.Times + 1
+            });
+        });
+      })
+      .catch(function (error) {
+        console.log('Error getting documents: ', error);
+      });
     //clear
     signupForm.reset();
     $('#SIModal').modal('hide');
@@ -158,6 +157,7 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
+//Geo Location function
 const getCurrentPosition = () => {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -165,25 +165,3 @@ const getCurrentPosition = () => {
     });
   });
 };
-
-// const loadLocation = async () => {
-//   try {
-//     const position = await getCurrentPosition();
-//     return position;
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
-
-// console.log(loadLocation());
-
-// const getLocation = () => {
-//   if (navigator.geolocation) {
-//     navigator.geolocation.getCurrentPosition((position) => {
-//       console.log(position.coords);
-//     });
-//   } else {
-//     return 'Location not Found!';
-//   }
-// };
-// console.log(getLocation());
