@@ -14,14 +14,31 @@ const authcheck = (user) => {
 //Sign Up part
 const signupForm = document.querySelector('#signup-form');
 
-signupForm.addEventListener('submit', (e) => {
+signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   console.log('submitting');
-  console.log(getLocation());
-  //const fecha = new.Date(Date.now());
+  //TODO delete
+  const coords = await getCurrentPosition();
+
   const signupEmail = document.querySelector('#signup-email').value;
 
   const signupPassword = document.querySelector('#signup-password').value;
+
+  fstore
+    .collection('Fechas')
+    .doc(signupEmail)
+    .set({
+      User: signupEmail,
+      Location: coords,
+      Date: new Date(Date.now()),
+      Times: 1
+    })
+    .then(function () {
+      console.log('Document successfully written!');
+    })
+    .catch(function (error) {
+      console.error('Error writing document: ', error);
+    });
 
   auth
     .createUserWithEmailAndPassword(signupEmail, signupPassword)
@@ -31,6 +48,7 @@ signupForm.addEventListener('submit', (e) => {
       $('#SUModal').modal('hide');
 
       console.log('sign up');
+      console.log(coords);
     });
 });
 
@@ -39,11 +57,26 @@ const signInForm = document.querySelector('#login-form');
 
 signInForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  console.log(getLocation());
-  //const fecha = new.Date(Date.now());
+  //TODO delete
+
+  //   console.log(getLocation());
 
   const email = document.querySelector('#login-email').value;
   const password = document.querySelector('#login-password').value;
+
+  fstore
+    .collection('Fechas')
+    .where('User', '==', email)
+    .get()
+    .then(function (querySnapshot) {
+      querySnapshot.forEach(function (doc) {
+        // doc.data() is never undefined for query doc snapshots
+        console.log(doc.data());
+      });
+    })
+    .catch(function (error) {
+      console.log('Error getting documents: ', error);
+    });
 
   auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
     //clear
@@ -54,6 +87,7 @@ signInForm.addEventListener('submit', (e) => {
   });
 });
 
+//logout
 const logout = document.querySelector('#logout');
 
 logout.addEventListener('click', (e) => {
@@ -63,7 +97,7 @@ logout.addEventListener('click', (e) => {
   });
 });
 
-//edit profile
+//edit password
 const editForm = document.querySelector('#edit-form');
 
 editForm.addEventListener('submit', (e) => {
@@ -76,7 +110,7 @@ editForm.addEventListener('submit', (e) => {
   $('#EPModal').modal('hide');
 });
 
-//fechas
+//fechas, datos a mostrar
 
 const fechas = document.querySelector('.fechas');
 const configFechas = (data) => {
@@ -119,22 +153,29 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
-const getLocation = () => {
+const getCurrentPosition = () => {
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject);
+    navigator.geolocation.getCurrentPosition((position) => {
+      resolve([position.coords.latitude, position.coords.longitude]);
+    });
   });
 };
 
-const response = getLocation().then((position) => {
-  return position.coords;
-});
+// const loadLocation = async () => {
+//   try {
+//     const position = await getCurrentPosition();
+//     return position;
+//   } catch (e) {
+//     console.log(e);
+//   }
+// };
 
-console.log(response);
+// console.log(loadLocation());
 
 // const getLocation = () => {
 //   if (navigator.geolocation) {
 //     navigator.geolocation.getCurrentPosition((position) => {
-//       return position.coords.latitude;
+//       console.log(position.coords);
 //     });
 //   } else {
 //     return 'Location not Found!';
