@@ -17,7 +17,6 @@ const signupForm = document.querySelector('#signup-form');
 signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   console.log('submitting');
-  //TODO delete
   const coords = await getCurrentPosition();
 
   const signupEmail = document.querySelector('#signup-email').value;
@@ -55,12 +54,10 @@ signupForm.addEventListener('submit', async (e) => {
 //Sign In part
 const signInForm = document.querySelector('#login-form');
 
-signInForm.addEventListener('submit', (e) => {
+signInForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  //TODO delete
 
-  //   console.log(getLocation());
-
+  const coords = await getCurrentPosition();
   const email = document.querySelector('#login-email').value;
   const password = document.querySelector('#login-password').value;
 
@@ -70,8 +67,16 @@ signInForm.addEventListener('submit', (e) => {
     .get()
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
-        // doc.data() is never undefined for query doc snapshots
-        console.log(doc.data());
+        const data = doc.data();
+        fstore
+          .collection('Fechas')
+          .doc(data.User)
+          .set({
+            User: data.User,
+            Location: coords,
+            Date: new Date(Date.now()),
+            Times: data.Times + 1
+          });
       });
     })
     .catch(function (error) {
